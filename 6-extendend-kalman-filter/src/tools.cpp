@@ -13,13 +13,15 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
                               const vector<VectorXd> &ground_truth) {
   /**
   TODO:
-    * Calculate the RMSE here.
+    * Calculate the RMSE here. Called by FusionEKF.cpp
   */
+	// Part 23  	
 }
 
 MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
   /**
   TODO:
-    * Calculate a Jacobian here.
+    * Calculate a Jacobian here. Called by kalman_filter.cpp
   */
+	// Part 19	
 }
