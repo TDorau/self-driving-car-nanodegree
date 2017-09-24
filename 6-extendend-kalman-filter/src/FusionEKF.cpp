@@ -41,6 +41,7 @@ FusionEKF::FusionEKF() {
   H_laser_ << 1, 0, 0, 0,
   			  0, 1, 0, 0;
 
+ekf_ = KalmanFilter();
 // initializing state transition matrix 4x4 matrix, lesson 8
   ekf_.F_ =  MatrixXd(4,4);
   ekf_.F_ << 1, 0, 1, 0,
@@ -57,8 +58,8 @@ FusionEKF::FusionEKF() {
   			 
 
   // set the acceleration noise components
-  noise_ax = 9 //provided in the quiz as 9 in setion 13 of lesson 5
-  noise_ay = 9 //provided in the quiz as 9
+  noise_ax = 9; //provided in the quiz as 9 in setion 13 of lesson 5
+  noise_ay = 9; //provided in the quiz as 9
 }
 
 /**
@@ -89,14 +90,14 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       Convert radar from polar to cartesian coordinates and initialize state.
       */
 
-    	// just set ekf_.x_(0) to ro*cos(theta)
-		// just set ekf_.x_(1) to ro*sin(theta)
+    	// just set ekf_.x_(0) to ro*cos(phi)
+		// just set ekf_.x_(1) to ro*sin(phi)
 
     	float rho = measurement_pack.raw_measurements_[0];
     	float phi = measurement_pack.raw_measurements_[1];
     	float rho_dot = measurement_pack.raw_measurements_[2];
 
-    	ekf_.x_ << rho*cos(theta), rho*sin(theta), 0, 0;
+    	ekf_.x_ << rho*cos(phi), rho*sin(phi), 0, 0;
 
 
     }
@@ -108,7 +109,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     	//just set ekf_.x_(0) to x
     	// just set ekf_.x_(1) to y 
 
-    	ekf_.x_ = measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1], 0, 0;
+    	ekf_.x_ << measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1], 0, 0;
     }
 
     // ekf_.F_ << set to 1 diagonal matrix
