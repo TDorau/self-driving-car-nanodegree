@@ -112,11 +112,13 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     	ekf_.x_ << measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1], 0, 0;
     }
 
-    // ekf_.F_ << set to 1 diagonal matrix
+    // ekf_.F_ << set to 1 diagonal matrix, from Q&A, why would I need that here?
+    /*
     ekf_.F_ << 1, 0, 0, 0,
                0, 1, 0, 0,
                0, 0, 1, 0,
                0, 0, 0, 1;
+    */
     // previous_timestamp_ = measurement_pack.timestamp_;
     previous_timestamp_ = measurement_pack.timestamp_;
 
@@ -175,7 +177,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       // set ekf_.H_ by setting to Hj which is the calculated jacobian
       // set ekf_.R_ by just using R_radar
       ekf_.R_ = R_radar_;
-      Hj_ = tools.CalculateJacobian(ekf_.x_);
+      ekf_.H_ = tools.CalculateJacobian(ekf_.x_);
 
       //ekf_.UpdateEKF(measurement_pack.raw_measurements_);
       ekf_.UpdateEKF(measurement_pack.raw_measurements_);
