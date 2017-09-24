@@ -23,8 +23,12 @@ void KalmanFilter::Predict() {
     * predict the state
   */
 	// x = F * x_ section 8 in lesson 5
-	//MaitrxXd Ft = F_.transpose(); section 9 in lesosn 5
-	// P_ = F_*P_*Ft+Q_;  	
+	//MaitrxXd Ft = F_.transpose(); section 9 in lesson 5
+	// P_ = F_*P_*Ft+Q_;  
+
+	x_ = F_ * x_;
+	MatrixXd Ft = F_.transpose();
+	P_ = F_ * P_ * Ft + Q_;
 }
 
 void KalmanFilter::Update(const VectorXd &z) {
@@ -32,27 +36,19 @@ void KalmanFilter::Update(const VectorXd &z) {
   TODO:
     * update the state by using Kalman Filter equations (LIDAR)
   */
-	/*
-	In Section 7 of lesson 5
-	VectorXd y = z - H * x;
-	MatrixXd Ht = H.transpose();
-	MatrixXd S = H * P * Ht + R;
+
+	// In Section 7 of lesson 5
+	VectorXd y = z - H_ * x_;
+	MatrixXd Ht = H_.transpose();
+	MatrixXd S = H_ * P_ * Ht + R_;
 	MatrixXd Si = S.inverse();
-	MatrixXd K = P * Ht * Si;
+	MatrixXd K = P_ * Ht * Si;
 
-	// new state
-
-	x = x + (K * y);
-	P = (I - K * H) * P;
-
-	//KF Prediction step
-
-	x = F * x + u;
-	MatrixXd Ft = F.transpose();
-	P = F * P * Ft + Q;
-
-
-	*/
+	// new state Lesson 12
+	x_ = x_ + (K * y);
+	long x_size = x_.size();
+	MatrixXd I = MatrixXd::Identity(x_size, x_size);
+	P_ = (I - K * H_) * P_;
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
@@ -60,7 +56,7 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   TODO:
     * update the state by using Extended Kalman Filter equations (RADAR)
   */
-    /*
+
 	// Section 14 of lesson 5.
 	float x = ekf_.x(0);
 	float y = ekf_.x_(1);
@@ -69,26 +65,21 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
 
 	float rho =  sqrt(x*x+y*y);
 	float theta = atan2(y,x);
-	float ro_dot = (x*vx+y*vy)/rho
+	float rho_dot = (x*vx+y*vy)/rho;
 	VectorXd z_pred = VectorXd(3);
 	z_pred << rho, theta, ro_dot;
 
 	VectorXd y = z - z_pred;
 
 	// In section 7 of lesson 5
-	MatrixXd Ht = H.transpose();
-	MatrixXd S = H * P * Ht + R;
+	MatrixXd Ht = H_.transpose();
+	MatrixXd S = H_ * P_ * Ht + R_;
 	MatrixXd Si = S.inverse();
-	MatrixXd K = P * Ht * Si;
+	MatrixXd K = P_ * Ht * Si;
 
 	// new state
-
-	x = x + (K * y);
+	x_ = x_ + (K * y);
+	long x_size = x_.size();
+	MatrixXd I = MatrixXd::Identity(x_size, x_size);
 	P = (I - K * H) * P;
-
-	x = F * x + u;
-	MatrixXd Ft = F.transpose();
-	P = F * P * Ft + Q;
-    */
-
 }
