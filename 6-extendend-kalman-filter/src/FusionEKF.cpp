@@ -41,7 +41,6 @@ FusionEKF::FusionEKF() {
   H_laser_ << 1, 0, 0, 0,
   			  0, 1, 0, 0;
 
-ekf_ = KalmanFilter();
 // initializing state transition matrix 4x4 matrix, lesson 8
   ekf_.F_ =  MatrixXd(4,4);
   ekf_.F_ << 1, 0, 1, 0,
@@ -190,7 +189,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       ekf_.H_ = H_laser_;
 
       //ekf_.Update(measurement_pack.raw_measurements_); 
-      ekf_.UpdateEKF(measurement_pack.raw_measurements_);     
+      ekf_.Update(measurement_pack.raw_measurements_);  
   }
 
   // print the output

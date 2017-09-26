@@ -1,7 +1,9 @@
 #include "kalman_filter.h"
+#include <iostream>
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
+
 
 KalmanFilter::KalmanFilter() {}
 
@@ -63,14 +65,17 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
 	float vx = x_(2);
 	float vy = x_(3);
 
-	float rho =  sqrt(px*px+py*py);
-	float theta = atan2(py,px);
+	float rho = sqrt(px*px+py*py);
+	float phi = atan2(py,px);
 	float rho_dot = (px*vx+py*vy)/rho;
 	VectorXd z_pred = VectorXd(3);
-	z_pred << rho, theta, rho_dot;
+	z_pred << rho, phi, rho_dot;
 
 	VectorXd y = z - z_pred;
 
+	//angle normalization
+	y[1] = atan2(sin(y[1]),cos(y[1]));
+	
 	// In section 7 of lesson 5
 	MatrixXd Ht = H_.transpose();
 	MatrixXd S = H_ * P_ * Ht + R_;
