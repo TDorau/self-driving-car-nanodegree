@@ -55,6 +55,18 @@ UKF::UKF() {
 
   to initialize x and P see "What to expect form the project"
   */
+
+  // Weights of sigma points
+  VectorXd weights_;
+
+  // State dimension
+  n_x_;
+
+  // Augmented state dimension
+  n_aug_;
+
+  ///* Sigma point spreading parameter
+  lambda_;
 }
 
 UKF::~UKF() {}
