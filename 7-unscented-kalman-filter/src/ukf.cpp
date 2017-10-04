@@ -71,7 +71,10 @@ UKF::UKF() {
   P_ = MatrixXd::Identity(n_x_, n_x_);
 
   //*Predicted Sigma points
-  Xsig_pred_ = MatrixXd(5,15); 
+  Xsig_pred_ = MatrixXd(5,15);
+
+  // Weights of sigma points
+  weights_ = VectorXd(2 * n_aug_ + 1); 
 
 }
 
@@ -114,7 +117,6 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 		//Initialize anything else here(e.g. P_, anything else needed)
 		previous_timestamp_ = meas_package.timestamp_;
 		is_initialized_ = true;
-		cout<<"Intialized"<<endl;
 		return;		
 	}
 	
@@ -130,6 +132,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 	}
 	previous_timestamp_ = meas_package.timestamp_;
 }
+
 
 /**
  * Predicts sigma points, the state, and the state covariance matrix.
@@ -223,8 +226,6 @@ void UKF::Prediction(double delta_t) {
 	//Lesson 7, section 24: Predicted Mean and Covariance Assignment 2
 
 	//set weights
-	// Weights of sigma points
-    weights_ = VectorXd(2 * n_aug_ + 1);
 	double weight_0 = lambda_ / (lambda_ + n_aug_);
 	weights_(0) = weight_0;
 	for (int i = 1; i < 2 * n_aug_ + 1; i++) {
@@ -249,13 +250,10 @@ void UKF::Prediction(double delta_t) {
 		VectorXd x_diff = Xsig_pred_.col(i) - x_;
 		//angle normalization
 		while (x_diff(3) > M_PI) x_diff(3) -= 2. * M_PI;
-		while (x_diff(3) < M_PI) x_diff(3) += 2. * M_PI;
+		while (x_diff(3) < -M_PI) x_diff(3) += 2. * M_PI;
 
 		P_ = P_ + weights_(i) * x_diff * x_diff.transpose();
 	}
-
-	cout <<"x_ Predict"<< endl;
-	cout<<x_<<endl;
 }
 
 
@@ -300,9 +298,6 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 	long x_size = x_.size();
 	MatrixXd I = MatrixXd::Identity(x_size, x_size);
 	P_ = (I - K * H_) * P_;
-
-	cout <<"x_ Update Lidar"<< endl;
-	cout <<x_<< endl;
 }
 
 
@@ -330,7 +325,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 	MatrixXd Zsig = MatrixXd(n_z, 2 * n_aug_ + 1);
 
 	//transform sigma points into measurement space
-	for (int i=0; i<2*n_aug_+1; i++) {
+	for (int i = 0; i < 2 * n_aug_ + 1; i++) {
 		//2n+1 sigma points
 
 		//extra values for better readability
@@ -364,7 +359,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 		//residual
 		VectorXd z_diff = Zsig.col(i) - z_pred;
 		//angle normalization
-		while (z_diff(1) > M_PI)  z_diff(1)-= 2. * M_PI;
+		while (z_diff(1) > M_PI)  z_diff(1) -= 2. * M_PI;
 		while (z_diff(1) < -M_PI) z_diff(1) += 2. * M_PI;
 
 		S = S + weights_(i) * z_diff * z_diff.transpose();
@@ -385,7 +380,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
 	//calculate cross correlation matrix
 	Tc.fill(0.0);
-	for (int i =0; i<2*n_aug_+1; i++) {
+	for (int i = 0; i < 2 * n_aug_ + 1; i++) {
 		//2n+1 sigma points
 		//residual
 		VectorXd z_diff = Zsig.col(i) - z_pred;
@@ -396,7 +391,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 		//state difference
 		VectorXd x_diff = Xsig_pred_.col(i) - x_;
 		//angle normalization
-		while (x_diff(3) > M_PI) x_diff(3) -= 2. * M_PI;
+		while (x_diff(3) > M_PI)  x_diff(3) -= 2. * M_PI;
 		while (x_diff(3) < -M_PI) x_diff(3) += 2. * M_PI;
 
 		Tc = Tc + weights_(i) * x_diff * z_diff.transpose();
@@ -412,13 +407,10 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 	VectorXd z_diff = z - z_pred;
 
 	//angle normalization
-	while (z_diff(1) > M_PI) z_diff(1) -= 2. * M_PI;
+	while (z_diff(1) > M_PI)  z_diff(1) -= 2. * M_PI;
 	while (z_diff(1) < -M_PI) z_diff(1) += 2. * M_PI;
 
 	//update state mean and covariance matrix
 	x_ = x_ + K * z_diff;
 	P_ = P_ - K * S * K.transpose();
-
-	cout <<"x_ Update Radar"<< endl;
-	cout <<x_<< endl;
 }
