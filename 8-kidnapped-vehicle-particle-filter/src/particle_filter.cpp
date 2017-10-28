@@ -142,9 +142,9 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 
 	//calculation to speed up multivariate gaussian calculation
 
-	double denum1 = 2*std_landmark[0]*std_landmark[0];
-	double denum2 = 2*std_landmark[1]*std_landmark[1];
-	double denum3 = 2*M_PI*std_landmark[0]*std_landmark[1];
+	double denom1 = 2*std_landmark[0]*std_landmark[0];
+	double denom2 = 2*std_landmark[1]*std_landmark[1];
+	double denom3 = 2*M_PI*std_landmark[0]*std_landmark[1];
 
 
 	// for each particle
@@ -195,7 +195,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 				double meas_y = trans_observations[i].y;
 				double mu_x = map_landmarks.landmark_list[association].x_f;
 				double mu_y = map_landmarks.landmark_list[association].y_f;
-				long double multipler = 1/denum3*exp(-(pow(meas_x-mu_x,2.0)/denum1+pow(meas_y-mu_y,2.0)/denum2));///????
+				long double multipler = 1/denom3*exp(-(pow(meas_x-mu_x,2.0)/denom1+pow(meas_y-mu_y,2.0)/denom2));///????
 				if(multipler > 0) {
 					particles[p].weight *= multipler;
 				}
