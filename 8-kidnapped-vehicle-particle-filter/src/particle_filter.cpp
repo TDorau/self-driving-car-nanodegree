@@ -26,7 +26,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	// NOTE: Consult particle_filter.h for more information about this method (and others in this file).
 
 	// could also be up to a 1000, need further testing, use 1 or 2 particles for debugging
-	num_particles = 1000;
+	num_particles = 100;
 
 	std::default_random_engine gen;
 
@@ -59,29 +59,28 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 
 	default_random_engine gen;
 
+	normal_distribution<double> N_x(0, std_pos[0]);
+	normal_distribution<double> N_y(0, std_pos[1]);
+	normal_distribution<double> N_theta(0, std_pos[2]);
+
 	for(int i = 0; i < num_particles; i++) {
-		double new_x;
-		double new_y;
-		double new_theta;
 
 		if (yaw_rate == 0) {
-			new_x = particles[i].x + velocity*delta_t*cos(particles[i].theta);
-			new_y = particles[i].y + velocity*delta_t*sin(particles[i].theta);
-			new_theta = particles[i].theta;
+			particles[i].x = particles[i].x + velocity*delta_t*cos(particles[i].theta);
+			particles[i].y = particles[i].y + velocity*delta_t*sin(particles[i].theta);
+			particles[i].theta = particles[i].theta;
 		}
 		else {
 			// equations from lesson 14 section 8
-			new_x = particles[i].x + velocity/yaw_rate*(sin(particles[i].theta+yaw_rate*delta_t)-sin(particles[i].theta));
-			new_y = particles[i].y + velocity/yaw_rate*(cos(particles[i].theta)-cos(particles[i].theta));
-			new_theta = particles[i].theta + yaw_rate*delta_t;
+			particles[i].x = particles[i].x + velocity/yaw_rate*(sin(particles[i].theta+yaw_rate*delta_t)-sin(particles[i].theta));
+			particles[i].y = particles[i].y + velocity/yaw_rate*(cos(particles[i].theta)-cos(particles[i].theta));
+			particles[i].theta = particles[i].theta + yaw_rate*delta_t;
 		}
-		normal_distribution<double> N_x(new_x, std_pos[0]);
-		normal_distribution<double> N_y(new_y, std_pos[1]);
-		normal_distribution<double> N_theta(new_theta, std_pos[2]);
 
-		particles[i].x = N_x(gen);
-		particles[i].y = N_y(gen);
-		particles[i].theta = N_theta(gen);
+		//add noise
+		particles[i].x += N_x(gen);
+		particles[i].y += N_y(gen);
+		particles[i].theta += N_theta(gen);
 	}
 
 }
@@ -102,11 +101,10 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
 	           calculate weight
 	*/
 
-	/*
 	// for each observation
 	for(int i = 0; i < observations.size(); i++){
 		//init minimum distance to a large number
-		double min_dist = 10000;
+		double min_dist = 10000.0;
 
 		// current observation
 		LandmarkObs o = observations[i];
@@ -116,17 +114,16 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
 			// current prediction
 			LandmarkObs p = predicted[j];
 			//calculate euclidean distance using dist function from helperfunctions
-			distance = dist(o.x, o.y, p.x, p.y);
+			double dista = dist(o.x, o.y, p.x, p.y);
 			// find the predicted landmark that is closest to the currently obvserved landmark
-			if (distance < min_dist) {
-				min_dist = distance;
+			if (dista < min_dist) {
+				min_dist = dista;
 				map_id = p.id;
 			}
 		}
 		// set observation id to nearest predicted landmark id
 		observations[i].id = map_id;
 	}
-	*/
 
 }
 
@@ -142,6 +139,13 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	//   and the following is a good resource for the actual equation to implement (look at equation 
 	//   3.33
 	//   http://planning.cs.uiuc.edu/node99.html
+
+	//calculation to speed up multivariate gaussian calculation
+
+	double denum1 = 2*std_landmark[0]*std_landmark[0];
+	double denum2 = 2*std_landmark[1]*std_landmark[1];
+	double denum3 = 2*M_PI*std_landmark[0]*std_landmark[1];
+
 
 	// for each particle
 	for(int p = 0; p < num_particles; p++) {
@@ -191,7 +195,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 				double meas_y = trans_observations[i].y;
 				double mu_x = map_landmarks.landmark_list[association].x_f;
 				double mu_y = map_landmarks.landmark_list[association].y_f;
-				long double multipler = 1/(2*M_PI*std_landmark[0]*std_landmark[1])*exp(-(pow(meas_x-mu_x,2.0)/(2*std_landmark[0]*std_landmark[0])+pow(meas_y-mu_y,2.0)/(2*std_landmark[1]*std_landmark[1])));///????
+				long double multipler = 1/denum3*exp(-(pow(meas_x-mu_x,2.0)/denum1+pow(meas_y-mu_y,2.0)/denum2));///????
 				if(multipler > 0) {
 					particles[p].weight *= multipler;
 				}
@@ -204,7 +208,6 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		particles[p] = SetAssociations(particles[p],associations,sense_x,sense_y);
 		weights[p] = particles[p].weight;
 	}
-
 }
 
 void ParticleFilter::resample() {
