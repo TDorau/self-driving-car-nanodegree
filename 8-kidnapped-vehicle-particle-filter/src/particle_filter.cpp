@@ -73,7 +73,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 		else {
 			// equations from lesson 14 section 8
 			particles[i].x = particles[i].x + velocity/yaw_rate*(sin(particles[i].theta+yaw_rate*delta_t)-sin(particles[i].theta));
-			particles[i].y = particles[i].y + velocity/yaw_rate*(cos(particles[i].theta)-cos(particles[i].theta));
+			particles[i].y = particles[i].y + velocity/yaw_rate*(cos(particles[i].theta)-cos(particles[i].theta+yaw_rate*delta_t));
 			particles[i].theta = particles[i].theta + yaw_rate*delta_t;
 		}
 
@@ -170,6 +170,8 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 
 		particles[p].weight = 1.0;
 
+		double weight_for_each_particle = 1.0;
+
 		// for each transformed observation
 		for(int i = 0; i < trans_observations.size(); i++) {
 			double closest_dis = sensor_range;
@@ -182,7 +184,8 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 
 				//calculate the distance from the transformed observation to the landmark
 				//double calc_dist =sqrt(pow(trans_observations[i].x-landmark_x, 2.0)+pow(trans_observations[i].y-landmark_y,2.0));
-				double calc_dist = dist(landmark_x, landmark_y, trans_observations[i].x, trans_observations[i].y);
+				//double calc_dist = dist(landmark_x, landmark_y, trans_observations[i].x, trans_observations[i].y);
+				double calc_dist = dist(trans_observations[i].x, trans_observations[i].y, landmark_x, landmark_y);
 				//assign landmark to the observation with the shortest distance
 				if(calc_dist < closest_dis) {
 					closest_dis = calc_dist;
@@ -203,11 +206,14 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 			associations.push_back(association+1);
 			sense_x.push_back(trans_observations[i].x);
 			sense_y.push_back(trans_observations[i].y);
+
 		}
 
 		particles[p] = SetAssociations(particles[p],associations,sense_x,sense_y);
 		weights[p] = particles[p].weight;
+		
 	}
+
 }
 
 void ParticleFilter::resample() {
