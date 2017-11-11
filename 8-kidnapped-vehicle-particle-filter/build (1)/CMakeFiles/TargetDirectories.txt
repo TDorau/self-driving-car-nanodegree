@@ -1,3 +1,0 @@
-/mnt/c/Users/ScHarKa/Google Drive/Vieles/Udacity/SelfDrivingCar/Projects/self-driving-car-nanodegree/8-kidnapped-vehicle-particle-filter/build/CMakeFiles/rebuild_cache.dir
-/mnt/c/Users/ScHarKa/Google Drive/Vieles/Udacity/SelfDrivingCar/Projects/self-driving-car-nanodegree/8-kidnapped-vehicle-particle-filter/build/CMakeFiles/edit_cache.dir
-/mnt/c/Users/ScHarKa/Google Drive/Vieles/Udacity/SelfDrivingCar/Projects/self-driving-car-nanodegree/8-kidnapped-vehicle-particle-filter/build/CMakeFiles/particle_filter.dir
