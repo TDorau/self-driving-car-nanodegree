@@ -6,7 +6,7 @@
 
 The model includes equations for vehicle x and y, velocity v, orientation psi as well as cross track error(cte) and orientation error (epsi). Based on the previous equation the model calculates the current state using the state equations shown below.
 
-![Alt text](./model.jpg)
+![Model](./model.jpg)
 
 Model output are mainly steer and throttle value.
 
