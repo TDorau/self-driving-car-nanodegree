@@ -101,7 +101,6 @@ int main() {
           *
           */
           for (int i = 0; i < ptsx.size(); i++) {
-          	//shift car reference angle to 90degrees
           	double shift_x = ptsx[i] - px;
           	double shift_y = ptsy[i] - py;
 
@@ -128,8 +127,20 @@ int main() {
       	  double steer_value = j[1]["steering_angle"];
       	  double throttle_value = j[1]["throttle"];
 
+      	  double Lf = 2.67;
+      	  // state considering latency
+      	  double lat = 0.1;
+      	  double lat_x = 0 + v * cos(steer_value) * lat;
+      	  double lat_y = 0 + v * sin(steer_value) * lat;
+		  double lat_psi = - v / Lf * steer_value * lat;
+		  double lat_v = v;
+		  double lat_epsi = -atan(coeffs[1]) + lat_psi;
+		  double lat_cte = polyeval(coeffs,0)+v*sin(lat_epsi)*lat;
+		  
       	  Eigen::VectorXd state(6);
-      	  state << 0, 0, 0, v, cte, epsi;
+      	  // equation not considering latency
+      	  //state << 0, 0, 0, v, cte, epsi;
+      	  state << lat_x, lat_y, lat_psi, lat_v, lat_cte, lat_epsi;
 
       	  // pass the state to Model Predictive Control
       	  auto vars = mpc.Solve(state, coeffs);
@@ -161,7 +172,6 @@ int main() {
               }
           }
 
-          double Lf = 2.67;
 
     	  json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
